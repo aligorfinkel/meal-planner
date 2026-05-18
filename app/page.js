@@ -116,8 +116,7 @@ export default function Home() {
       <main className="min-h-screen bg-rose-50 py-12 px-4">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-800">Carrot <span className="text-rose-400 font-normal italic text-xl">(meez)</span></h1>
-          </div>
+          <h1 className="text-3xl font-bold text-gray-800">Carrot</h1>          </div>
           <div className="bg-white rounded-2xl shadow-sm p-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">🍽️ Your Meal Plan</h2>
             <div className="whitespace-pre-wrap text-gray-700 leading-relaxed text-sm">
@@ -141,8 +140,7 @@ export default function Home() {
 
         <div className="text-center mb-10">
           <h1 className="text-4xl font-bold text-gray-800 mb-1">
-            Carrot <span className="text-rose-400 font-normal italic text-2xl">(meez)</span>
-          </h1>
+          Carrot          </h1>
           <p className="text-gray-400 text-sm mt-1">Because adulting is hard."</p>
           <p className="text-gray-500 text-base mt-2">Your weekly meals, sorted.</p>
         </div>
