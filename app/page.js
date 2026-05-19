@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const cuisineOptions = [
   'Italian', 'Mexican', 'Mediterranean', 'American', 'Indian',
@@ -9,12 +9,67 @@ const cuisineOptions = [
 ];
 
 const loadingMessages = [
-  "Chopping vegetables... 🔪",
-  "Figuring out dinner so you don't have to... 🛒",
+  "Chopping vegetables so you don't have to... 🥦",
+  "Figuring out dinner, one crisis at a time... 🤔",
   "Almost there, you're doing great... ✨",
-  "This is what adulting looks like... 🥦",
-  "Consulting the chef... 👨‍🍳",
+  "Consulting the fridge oracle... 🔮",
+  "Making adulting slightly less terrible... 🥄",
 ];
+
+const mealEmojis = { Breakfast: '☀️', Lunch: '🥪', Dinner: '🍝', Snacks: '🧃' };
+
+function MealCard({ meal, cardKey, expandedMeal, setExpandedMeal }) {
+  const [imgUrl, setImgUrl] = useState('');
+  const isExpanded = expandedMeal === cardKey;
+
+  useEffect(() => {
+    const query = meal.imageSearch || meal.realName;
+    fetch(`/api/image?query=${encodeURIComponent(query)}`)
+      .then(r => r.json())
+      .then(data => { if (data.url) setImgUrl(data.url); });
+  }, [meal.imageSearch, meal.realName]);
+
+  return (
+    <div className="meal-card">
+      <div className="meal-card-img" style={imgUrl ? { backgroundImage: `url(${imgUrl})` } : {}}>
+        <div className="meal-type-tag">{mealEmojis[meal.type] || '🍽️'} {meal.type}</div>
+      </div>
+      <div className="meal-card-body">
+        <h3 className="meal-fun-name">{meal.realName}</h3>
+        <p className="meal-description">{meal.description}</p>
+        <div className="meal-meta">
+          <span className="time-tag">⏱ {meal.cookTime}</span>
+        </div>
+        <button
+          onClick={() => setExpandedMeal(isExpanded ? null : cardKey)}
+          className="recipe-toggle"
+        >
+          {isExpanded ? 'Hide recipe ↑' : 'See recipe ↓'}
+        </button>
+        {isExpanded && (
+          <div className="recipe-details">
+            <div className="mb-3">
+              <p className="recipe-section-title">Ingredients</p>
+              <ul className="recipe-list">
+                {meal.ingredients.map((ing, ii) => (
+                  <li key={ii}>• {ing}</li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <p className="recipe-section-title">Steps</p>
+              <ol className="recipe-list">
+                {meal.steps.map((step, si) => (
+                  <li key={si}>{si + 1}. {step}</li>
+                ))}
+              </ol>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function Home() {
   const [form, setForm] = useState({
@@ -28,9 +83,10 @@ export default function Home() {
     ingredients: '',
   });
 
-  const [mealPlan, setMealPlan] = useState('');
+  const [mealPlan, setMealPlan] = useState(null);
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState(loadingMessages[0]);
+  const [expandedMeal, setExpandedMeal] = useState(null);
 
   const toggleItem = (field, value) => {
     setForm(prev => ({
@@ -54,7 +110,7 @@ export default function Home() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...form,
-        cuisines: [...form.cuisines, form.otherCuisine].filter(Boolean).join(', '),
+        cuisines: [...form.cuisines, form.otherCuisine].filter(Boolean),
       }),
     });
     const data = await res.json();
@@ -63,17 +119,13 @@ export default function Home() {
     setLoading(false);
   };
 
-  const ButtonGroup = ({ field, options }) => (
+  const MultiSelect = ({ field, options }) => (
     <div className="flex flex-wrap gap-2">
       {options.map(opt => (
         <button
           key={opt}
           onClick={() => toggleItem(field, opt)}
-          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-            form[field].includes(opt)
-              ? 'bg-rose-400 text-white border-rose-400'
-              : 'bg-white text-gray-700 border-gray-200 hover:border-rose-300'
-          }`}
+          className={`pill-btn ${form[field].includes(opt) ? 'pill-btn-active' : 'pill-btn-inactive'}`}
         >
           {opt}
         </button>
@@ -87,11 +139,7 @@ export default function Home() {
         <button
           key={opt}
           onClick={() => setForm(prev => ({ ...prev, [field]: opt }))}
-          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-            form[field] === opt
-              ? 'bg-rose-400 text-white border-rose-400'
-              : 'bg-white text-gray-700 border-gray-200 hover:border-rose-300'
-          }`}
+          className={`pill-btn ${form[field] === opt ? 'pill-btn-active' : 'pill-btn-inactive'}`}
         >
           {opt}
         </button>
@@ -99,127 +147,184 @@ export default function Home() {
     </div>
   );
 
+  // Loading screen
   if (loading) {
     return (
-      <main className="min-h-screen bg-rose-50 flex items-center justify-center px-4">
+      <main className="min-h-screen carrot-bg flex items-center justify-center px-4">
         <div className="text-center">
-          <div className="text-6xl mb-6">🍳</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-3">Building your meal plan...</h2>
-          <p className="text-rose-400 text-lg font-medium">{loadingMessage}</p>
+          <div className="loading-spinner mx-auto mb-6"></div>
+          <h2 className="text-2xl font-bold heading-dark mb-3" style={{fontFamily: "'Fraunces', serif"}}>
+            Building your meal plan... 🍳
+          </h2>
+          <p className="text-pink-500 text-lg">{loadingMessage}</p>
         </div>
       </main>
     );
   }
 
+  // Results screen
   if (mealPlan) {
     return (
-      <main className="min-h-screen bg-rose-50 py-12 px-4">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Carrot</h1>          </div>
-          <div className="bg-white rounded-2xl shadow-sm p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">🍽️ Your Meal Plan</h2>
-            <div className="whitespace-pre-wrap text-gray-700 leading-relaxed text-sm">
-              {mealPlan}
+      <main className="min-h-screen carrot-bg">
+        {/* Header */}
+        <div className="text-center pt-12 pb-6 px-4">
+          <div className="carrot-logo mb-2">🥕 carrot</div>
+          <p className="veggie-banner mx-auto">
+            🎉 You remembered to eat a vegetable this week. We&apos;re proud of you.
+          </p>
+        </div>
+
+        <div className="max-w-6xl mx-auto px-4 pb-16">
+
+          {/* Weekly Grid */}
+          <h2 className="results-heading mb-4">This Week&apos;s Vibe</h2>
+          <div className="weekly-grid mb-12">
+            {mealPlan.days.map((day, i) => (
+              <div key={i} className="day-card">
+                <div className="day-emoji">{mealEmojis[day.meals[0]?.type] || '🍽️'}</div>
+                <div className="day-meal-name">{day.meals[0]?.funName || day.meals[0]?.realName}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Meal Cards */}
+          {mealPlan.days.map((day, di) => (
+            <div key={di} className="mb-10">
+              <h2 className="results-heading mb-4">Meal {di + 1}</h2>
+              <div className="meal-cards-grid">
+                {day.meals.map((meal, mi) => (
+                  <MealCard
+                    key={mi}
+                    meal={meal}
+                    cardKey={`${di}-${mi}`}
+                    expandedMeal={expandedMeal}
+                    setExpandedMeal={setExpandedMeal}
+                  />
+                ))}
+              </div>
             </div>
-            <button
-              onClick={() => setMealPlan('')}
-              className="mt-8 px-6 py-3 bg-rose-400 text-white rounded-lg font-medium hover:bg-rose-500 transition-all"
-            >
+          ))}
+
+          {/* Grocery List */}
+          <h2 className="results-heading mb-6">🛒 Grocery List</h2>
+          <div className="grocery-single-col">
+            {Object.entries(mealPlan.groceryList).map(([category, items]) => (
+              items.length > 0 && (
+                <div key={category} className="grocery-section">
+                  <h3 className="grocery-category">{category}</h3>
+                  <ul className="grocery-items">
+                    {items.map((item, i) => (
+                      <li key={i} className="grocery-item">
+                        <span className="grocery-checkbox"></span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )
+            ))}
+          </div>
+
+          <div className="text-center mt-12">
+            <button onClick={() => setMealPlan(null)} className="cta-btn">
               Plan another week
             </button>
           </div>
+
+          <p className="footer-text">Made with 💗 and mild panic by Carrot</p>
         </div>
       </main>
     );
   }
 
+  // Form screen
   return (
-    <main className="min-h-screen bg-rose-50 py-12 px-4">
-      <div className="max-w-2xl mx-auto">
+    <main className="min-h-screen carrot-bg">
 
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold text-gray-800 mb-1">
-          Carrot          </h1>
-          <p className="text-gray-400 text-sm mt-1">Because adulting is hard."</p>
-          <p className="text-gray-500 text-base mt-2">Your weekly meals, sorted.</p>
+      {/* Hero */}
+      <div className="hero-section">
+        <div className="hero-overlay"></div>
+        <div className="hero-content">
+          <div className="carrot-logo hero-logo">🥕 carrot</div>
+          <h1 className="hero-headline">
+            Adulting is hard. Dinner doesn&apos;t have to be.
+          </h1>
+          <a href="#form" className="cta-btn mt-6 inline-block">
+            Plan This Week
+          </a>
         </div>
+      </div>
 
-        <div className="bg-white rounded-2xl shadow-sm p-8 space-y-8">
+      {/* Form */}
+      <div id="form" className="max-w-2xl mx-auto px-4 py-12">
+        <div className="form-card">
 
-          <div>
-            <label className="block text-gray-800 font-semibold mb-3">Which meals do you want planned?</label>
-            <ButtonGroup field="meals" options={['Breakfast', 'Lunch', 'Dinner', 'Snacks']} />
+          <div className="form-section">
+            <label className="form-label">Which meals do you want planned?</label>
+            <MultiSelect field="meals" options={['Breakfast', 'Lunch', 'Dinner', 'Snacks']} />
           </div>
 
-          <div>
-            <label className="block text-gray-800 font-semibold mb-3">How many days?</label>
+          <div className="form-section">
+            <label className="form-label">How many days?</label>
             <SingleSelect field="days" options={['3', '5', '7']} />
           </div>
 
-          <div>
-            <label className="block text-gray-800 font-semibold mb-3">How many people are you feeding?</label>
-            <SingleSelect field="people" options={['1', '2', '3', '4', '5+']} />
+          <div className="form-section">
+            <label className="form-label">How many people are you feeding?</label>
+            <SingleSelect field="people" options={['Just me', '2 people', '3–4 people', '5+ crew']} />
           </div>
 
-          <div>
-            <label className="block text-gray-800 font-semibold mb-3">How long do you want to spend cooking per meal?</label>
-            <input
-              type="text"
-              placeholder="e.g. 30 minutes, 1 hour..."
-              value={form.cookingTime}
-              onChange={e => setForm(prev => ({ ...prev, cookingTime: e.target.value }))}
-              className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-rose-300"
-            />
+          <div className="form-section">
+            <label className="form-label">How long do you want to spend cooking?</label>
+            <SingleSelect field="cookingTime" options={['15 min', '30 min', '45 min', 'No rush']} />
           </div>
 
-          <div>
-            <label className="block text-gray-800 font-semibold mb-3">What cuisines do you like?</label>
-            <ButtonGroup field="cuisines" options={cuisineOptions} />
+          <div className="form-section">
+            <label className="form-label">What cuisines do you like?</label>
+            <MultiSelect field="cuisines" options={cuisineOptions} />
             <input
               type="text"
               placeholder="Other (type your own)..."
               value={form.otherCuisine}
               onChange={e => setForm(prev => ({ ...prev, otherCuisine: e.target.value }))}
-              className="mt-3 w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-rose-300"
+              className="form-input mt-3"
             />
           </div>
 
-          <div>
-            <label className="block text-gray-800 font-semibold mb-3">
-              Any dietary restrictions or allergies? <span className="text-gray-400 font-normal">(optional)</span>
+          <div className="form-section">
+            <label className="form-label">
+              Any dietary restrictions? <span className="optional-label">(optional)</span>
             </label>
             <input
               type="text"
-              placeholder="e.g. gluten-free, nut allergy, no shellfish..."
+              placeholder="e.g. vegetarian, gluten-free, no seafood..."
               value={form.restrictions}
               onChange={e => setForm(prev => ({ ...prev, restrictions: e.target.value }))}
-              className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-rose-300"
+              className="form-input"
             />
           </div>
 
-          <div>
-            <label className="block text-gray-800 font-semibold mb-3">
-              Any ingredients you want to use up? <span className="text-gray-400 font-normal">(optional)</span>
+          <div className="form-section">
+            <label className="form-label">
+              Ingredients you want to use up? <span className="optional-label">(optional)</span>
             </label>
             <input
               type="text"
               placeholder="e.g. chicken thighs, half a bag of lentils..."
               value={form.ingredients}
               onChange={e => setForm(prev => ({ ...prev, ingredients: e.target.value }))}
-              className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-rose-300"
+              className="form-input"
             />
           </div>
 
-          <button
-            onClick={handleSubmit}
-            className="w-full py-4 bg-rose-400 text-white rounded-lg font-semibold text-lg hover:bg-rose-500 transition-all"
-          >
-            Let's prep 🍴
+          <button onClick={handleSubmit} className="cta-btn w-full mt-2">
+            Let&apos;s prep
           </button>
 
         </div>
       </div>
+
+      <p className="footer-text">Made with 💗 and mild panic by Carrot</p>
     </main>
   );
 }
