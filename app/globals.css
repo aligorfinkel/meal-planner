@@ -48,8 +48,7 @@ body {
   position: relative;
   width: 100%;
   height: 380px;
-  background-image: url(https://images.unsplash.com/photo-1661257711676-79a0fc533569?q=80&w=1718&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D
-  );
+  background-image: url('https://images.unsplash.com/photo-1641596673069-cee3b0bc8320?w=1400&q=80');
   background-size: cover;
   background-position: center;
   border-radius: 0 0 2rem 2rem;
@@ -61,7 +60,7 @@ body {
 .hero-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.1) 100%);
+  background: linear-gradient(135deg, rgba(131,24,67,0.75) 0%, rgba(236,72,153,0.45) 100%);
 }
 
 .hero-content {
@@ -413,21 +412,22 @@ body {
 }
 
 /* ---- GROCERY LIST ---- */
-/* ---- GROCERY LIST ---- */
-.grocery-single-col {
-  background: white;
-  border-radius: 1.25rem;
-  padding: 2rem;
-  border: 1.5px solid #fce7f3;
-  max-width: 600px;
+.grocery-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
 }
 
-.grocery-section {
-  margin-bottom: 1.5rem;
+@media (min-width: 640px) {
+  .grocery-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-.grocery-section:last-child {
-  margin-bottom: 0;
+@media (min-width: 900px) {
+  .grocery-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .grocery-card {
@@ -496,12 +496,34 @@ body {
   opacity: 0.7;
 }
 
+/* ---- PROGRESS BAR ---- */
+.progress-bar-track {
+  width: 100%;
+  height: 6px;
+  background: #fce7f3;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--pink);
+  border-radius: 999px;
+  animation: progress 30s linear forwards;
+}
+
 /* ---- ANIMATIONS ---- */
 @keyframes wiggle {
   0%   { transform: rotate(0deg); }
   25%  { transform: rotate(3deg); }
   75%  { transform: rotate(-3deg); }
   100% { transform: rotate(0deg); }
+}
+
+@keyframes progress {
+  0%   { width: 0%; }
+  80%  { width: 85%; }
+  100% { width: 95%; }
 }
 
 @keyframes spin {

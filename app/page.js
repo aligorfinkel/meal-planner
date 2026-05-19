@@ -13,7 +13,10 @@ const loadingMessages = [
   "Figuring out dinner, one crisis at a time... 🤔",
   "Almost there, you're doing great... ✨",
   "Consulting the fridge oracle... 🔮",
-  "Making adulting slightly less terrible... 🥄",
+  "Googling what to do with lentils... 🤷",
+  "Finding recipes that require fewer than 3 pots... 🍲",
+  "Making adulting look deceptively easy... 💅",
+  "Debating whether breakfast for dinner counts... 🥞",
 ];
 
 const mealEmojis = { Breakfast: '☀️', Lunch: '🥪', Dinner: '🍝', Snacks: '🧃' };
@@ -144,12 +147,15 @@ export default function Home() {
   if (loading) {
     return (
       <main className="min-h-screen carrot-bg flex items-center justify-center px-4">
-        <div className="text-center">
+        <div className="text-center" style={{width: '100%', maxWidth: '400px'}}>
           <div className="loading-spinner mx-auto mb-6"></div>
           <h2 className="text-2xl font-bold heading-dark mb-3" style={{fontFamily: "'Fraunces', serif"}}>
             Building your meal plan... 🍳
           </h2>
-          <p className="text-pink-500 text-lg">{loadingMessage}</p>
+          <p className="text-pink-500 text-lg mb-6">{loadingMessage}</p>
+          <div className="progress-bar-track">
+            <div className="progress-bar-fill"></div>
+          </div>
         </div>
       </main>
     );
