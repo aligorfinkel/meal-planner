@@ -17,6 +17,7 @@ const loadingMessages = [
 ];
 
 const mealEmojis = { Breakfast: '☀️', Lunch: '🥪', Dinner: '🍝', Snacks: '🧃' };
+const mealOrder = ['Breakfast', 'Lunch', 'Dinner', 'Snacks'];
 
 function MealCard({ meal, cardKey, expandedMeal, setExpandedMeal }) {
   const isExpanded = expandedMeal === cardKey;
@@ -79,6 +80,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState(loadingMessages[0]);
   const [expandedMeal, setExpandedMeal] = useState(null);
+  const [showForm, setShowForm] = useState(false);
 
   const toggleItem = (field, value) => {
     setForm(prev => ({
@@ -139,7 +141,6 @@ export default function Home() {
     </div>
   );
 
-  // Loading screen
   if (loading) {
     return (
       <main className="min-h-screen carrot-bg flex items-center justify-center px-4">
@@ -154,11 +155,9 @@ export default function Home() {
     );
   }
 
-  // Results screen
   if (mealPlan) {
     return (
       <main className="min-h-screen carrot-bg">
-        {/* Header */}
         <div className="text-center pt-12 pb-6 px-4">
           <div className="carrot-logo mb-2">🥕 carrot</div>
           <p className="veggie-banner mx-auto">
@@ -167,27 +166,31 @@ export default function Home() {
         </div>
 
         <div className="max-w-6xl mx-auto px-4 pb-16">
+          {mealOrder.map(type => {
+            const mealsOfType = mealPlan.days.flatMap((day, di) =>
+              day.meals
+                .filter(m => m.type === type)
+                .map((meal, mi) => ({ meal, di, mi }))
+            );
+            if (mealsOfType.length === 0) return null;
+            return (
+              <div key={type} className="mb-10">
+                <h2 className="results-heading mb-4">{mealEmojis[type]} {type}</h2>
+                <div className="meal-cards-grid">
+                  {mealsOfType.map(({ meal, di, mi }) => (
+                    <MealCard
+                      key={`${di}-${mi}`}
+                      meal={meal}
+                      cardKey={`${di}-${mi}`}
+                      expandedMeal={expandedMeal}
+                      setExpandedMeal={setExpandedMeal}
+                    />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
 
-          {/* Weekly Grid */}
-          <h2 className="results-heading mb-4">This Week&apos;s Vibe</h2>
-    
-
-          {/* Meal Cards - all in one grid */}
-          <div className="meal-cards-grid">
-            {mealPlan.days.flatMap((day, di) =>
-              day.meals.map((meal, mi) => (
-                <MealCard
-                  key={`${di}-${mi}`}
-                  meal={meal}
-                  cardKey={`${di}-${mi}`}
-                  expandedMeal={expandedMeal}
-                  setExpandedMeal={setExpandedMeal}
-                />
-              ))
-            )}
-          </div>
-
-          {/* Grocery List */}
           <h2 className="results-heading mb-6">🛒 Grocery List</h2>
           <div className="grocery-single-col">
             {Object.entries(mealPlan.groceryList).map(([category, items]) => (
@@ -208,7 +211,7 @@ export default function Home() {
           </div>
 
           <div className="text-center mt-12">
-            <button onClick={() => setMealPlan(null)} className="cta-btn">
+            <button onClick={() => { setMealPlan(null); setShowForm(false); }} className="cta-btn">
               Plan another week
             </button>
           </div>
@@ -219,11 +222,8 @@ export default function Home() {
     );
   }
 
-  // Form screen
   return (
     <main className="min-h-screen carrot-bg">
-
-      {/* Hero */}
       <div className="hero-section">
         <div className="hero-overlay"></div>
         <div className="hero-content">
@@ -231,80 +231,81 @@ export default function Home() {
           <h1 className="hero-headline">
             Adulting is hard. Dinner doesn&apos;t have to be.
           </h1>
-          <a href="#form" className="cta-btn mt-6 inline-block">
+          <button onClick={() => setShowForm(true)} className="cta-btn mt-6">
             Plan This Week
-          </a>
-        </div>
-      </div>
-
-      {/* Form */}
-      <div id="form" className="max-w-2xl mx-auto px-4 py-12">
-        <div className="form-card">
-
-          <div className="form-section">
-            <label className="form-label">Which meals do you want planned?</label>
-            <MultiSelect field="meals" options={['Breakfast', 'Lunch', 'Dinner', 'Snacks']} />
-          </div>
-
-          <div className="form-section">
-            <label className="form-label">How many days?</label>
-            <SingleSelect field="days" options={['3', '5', '7']} />
-          </div>
-
-          <div className="form-section">
-            <label className="form-label">How many people are you feeding?</label>
-            <SingleSelect field="people" options={['Just me', '2 people', '3–4 people', '5+ crew']} />
-          </div>
-
-          <div className="form-section">
-            <label className="form-label">How long do you want to spend cooking?</label>
-            <SingleSelect field="cookingTime" options={['15 min', '30 min', '45 min', 'No rush']} />
-          </div>
-
-          <div className="form-section">
-            <label className="form-label">What cuisines do you like?</label>
-            <MultiSelect field="cuisines" options={cuisineOptions} />
-            <input
-              type="text"
-              placeholder="Other (type your own)..."
-              value={form.otherCuisine}
-              onChange={e => setForm(prev => ({ ...prev, otherCuisine: e.target.value }))}
-              className="form-input mt-3"
-            />
-          </div>
-
-          <div className="form-section">
-            <label className="form-label">
-              Any dietary restrictions? <span className="optional-label">(optional)</span>
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. vegetarian, gluten-free, no seafood..."
-              value={form.restrictions}
-              onChange={e => setForm(prev => ({ ...prev, restrictions: e.target.value }))}
-              className="form-input"
-            />
-          </div>
-
-          <div className="form-section">
-            <label className="form-label">
-              Ingredients you want to use up? <span className="optional-label">(optional)</span>
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. chicken thighs, half a bag of lentils..."
-              value={form.ingredients}
-              onChange={e => setForm(prev => ({ ...prev, ingredients: e.target.value }))}
-              className="form-input"
-            />
-          </div>
-
-          <button onClick={handleSubmit} className="cta-btn w-full mt-2">
-            Let&apos;s prep
           </button>
-
         </div>
       </div>
+
+      {showForm && (
+        <div className="max-w-2xl mx-auto px-4 py-12">
+          <div className="form-card">
+
+            <div className="form-section">
+              <label className="form-label">Which meals do you want planned?</label>
+              <MultiSelect field="meals" options={['Breakfast', 'Lunch', 'Dinner', 'Snacks']} />
+            </div>
+
+            <div className="form-section">
+              <label className="form-label">How many days?</label>
+              <SingleSelect field="days" options={['3', '5', '7']} />
+            </div>
+
+            <div className="form-section">
+              <label className="form-label">How many people are you feeding?</label>
+              <SingleSelect field="people" options={['Just me', '2 people', '3–4 people', '5+ crew']} />
+            </div>
+
+            <div className="form-section">
+              <label className="form-label">How long do you want to spend cooking?</label>
+              <SingleSelect field="cookingTime" options={['15 min', '30 min', '45 min', 'No rush']} />
+            </div>
+
+            <div className="form-section">
+              <label className="form-label">What cuisines do you like?</label>
+              <MultiSelect field="cuisines" options={cuisineOptions} />
+              <input
+                type="text"
+                placeholder="Other (type your own)..."
+                value={form.otherCuisine}
+                onChange={e => setForm(prev => ({ ...prev, otherCuisine: e.target.value }))}
+                className="form-input mt-3"
+              />
+            </div>
+
+            <div className="form-section">
+              <label className="form-label">
+                Any dietary restrictions? <span className="optional-label">(optional)</span>
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. vegetarian, gluten-free, no seafood..."
+                value={form.restrictions}
+                onChange={e => setForm(prev => ({ ...prev, restrictions: e.target.value }))}
+                className="form-input"
+              />
+            </div>
+
+            <div className="form-section">
+              <label className="form-label">
+                Ingredients you want to use up? <span className="optional-label">(optional)</span>
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. chicken thighs, half a bag of lentils..."
+                value={form.ingredients}
+                onChange={e => setForm(prev => ({ ...prev, ingredients: e.target.value }))}
+                className="form-input"
+              />
+            </div>
+
+            <button onClick={handleSubmit} className="cta-btn w-full mt-2">
+              Let&apos;s prep
+            </button>
+
+          </div>
+        </div>
+      )}
 
       <p className="footer-text">Made with 💗 and mild panic by Carrot</p>
     </main>
