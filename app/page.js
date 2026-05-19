@@ -1,4 +1,5 @@
 'use client';
+
 import { useState } from 'react';
 
 const cuisineOptions = [
@@ -25,42 +26,6 @@ function MealCard({ meal, cardKey, expandedMeal, setExpandedMeal }) {
       <div className="meal-card-img" style={meal.imageUrl ? { backgroundImage: `url(${meal.imageUrl})` } : {}}>
         <div className="meal-type-tag">{mealEmojis[meal.type] || '🍽️'} {meal.type}</div>
       </div>
-      <div className="meal-card-body">
-        <h3 className="meal-fun-name">{meal.realName}</h3>
-        <p className="meal-description">{meal.description}</p>
-        <div className="meal-meta">
-          <span className="time-tag">⏱ {meal.cookTime}</span>
-        </div>
-        <button
-          onClick={() => setExpandedMeal(isExpanded ? null : cardKey)}
-          className="recipe-toggle"
-        >
-          {isExpanded ? 'Hide recipe ↑' : 'See recipe ↓'}
-        </button>
-        {isExpanded && (
-          <div className="recipe-details">
-            <div className="mb-3">
-              <p className="recipe-section-title">Ingredients</p>
-              <ul className="recipe-list">
-                {meal.ingredients.map((ing, ii) => (
-                  <li key={ii}>• {ing}</li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <p className="recipe-section-title">Steps</p>
-              <ol className="recipe-list">
-                {meal.steps.map((step, si) => (
-                  <li key={si}>{si + 1}. {step}</li>
-                ))}
-              </ol>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
       <div className="meal-card-body">
         <h3 className="meal-fun-name">{meal.realName}</h3>
         <p className="meal-description">{meal.description}</p>
