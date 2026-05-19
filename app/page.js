@@ -10,7 +10,7 @@ const cuisineOptions = [
 
 const loadingMessages = [
   "Chopping vegetables so you don't have to... 🥦",
-  "Figuring out dinner, one crisis at a time... 🍳",
+  "Figuring out dinner, one crisis at a time... 🤔",
   "Almost there, you're doing great... ✨",
   "Consulting the fridge oracle... 🔮",
   "Making adulting slightly less terrible... 🥄",
@@ -170,14 +170,7 @@ export default function Home() {
 
           {/* Weekly Grid */}
           <h2 className="results-heading mb-4">This Week&apos;s Vibe</h2>
-          <div className="weekly-grid mb-12">
-            {mealPlan.days.map((day, i) => (
-              <div key={i} className="day-card">
-                <div className="day-emoji">{mealEmojis[day.meals[0]?.type] || '🍽️'}</div>
-                <div className="day-meal-name">{day.meals[0]?.realName}</div>
-              </div>
-            ))}
-          </div>
+    
 
           {/* Meal Cards - all in one grid */}
           <div className="meal-cards-grid">
