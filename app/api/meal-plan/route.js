@@ -4,6 +4,23 @@ const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
+async function fetchPexelsImage(query) {
+  try {
+    const res = await fetch(
+      `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=1&orientation=landscape`,
+      { headers: { Authorization: process.env.PEXELS_API_KEY } }
+    );
+    const data = await res.json();
+    return data.photos?.[0]?.src?.medium || null;
+  } catch {
+    return null;
+  }
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 export async function POST(request) {
   try {
     const body = await request.json();
@@ -35,7 +52,7 @@ The JSON must follow this exact structure:
           "realName": "The actual meal name (e.g. 'Lemon Herb Salmon with Rice')",
           "description": "One funny, relatable sentence about this meal",
           "cookTime": "e.g. 25 min",
-          "imageSearch": "A simple 1-2 word search term for a food photo (e.g. 'salmon', 'pasta', 'tacos')",
+          "imageSearch": "A 2-3 word search term for a beautiful, appetizing food photo — be specific and descriptive (e.g. 'creamy scrambled eggs', 'spaghetti carbonara plate', 'grilled salmon fillet') not just the main ingredient",
           "ingredients": ["ingredient 1", "ingredient 2"],
           "steps": ["Step 1", "Step 2"]
         }
@@ -60,13 +77,19 @@ Only include the meal types requested (${mealsStr}). Make the funName and descri
     });
 
     const text = message.content[0].text.trim();
+    const parsed = JSON.parse(text);
 
-    try {
-      const parsed = JSON.parse(text);
-      return Response.json({ mealPlan: parsed });
-    } catch {
-      return Response.json({ error: "Failed to parse meal plan", raw: text }, { status: 500 });
+    // Fetch images sequentially with a small delay to avoid rate limits
+    for (const day of parsed.days) {
+      for (const meal of day.meals) {
+        const query = meal.imageSearch || meal.realName;
+        meal.imageUrl = await fetchPexelsImage(query);
+        await sleep(300);
+      }
     }
+
+    return Response.json({ mealPlan: parsed });
+
   } catch (err) {
     return Response.json({ error: err.message }, { status: 500 });
   }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 const cuisineOptions = [
   'Italian', 'Mexican', 'Mediterranean', 'American', 'Indian',
@@ -10,7 +10,7 @@ const cuisineOptions = [
 
 const loadingMessages = [
   "Chopping vegetables so you don't have to... 🥦",
-  "Figuring out dinner, one crisis at a time... 🤔",
+  "Figuring out dinner, one crisis at a time... 🍳",
   "Almost there, you're doing great... ✨",
   "Consulting the fridge oracle... 🔮",
   "Making adulting slightly less terrible... 🥄",
@@ -19,21 +19,49 @@ const loadingMessages = [
 const mealEmojis = { Breakfast: '☀️', Lunch: '🥪', Dinner: '🍝', Snacks: '🧃' };
 
 function MealCard({ meal, cardKey, expandedMeal, setExpandedMeal }) {
-  const [imgUrl, setImgUrl] = useState('');
   const isExpanded = expandedMeal === cardKey;
-
-  useEffect(() => {
-    const query = meal.imageSearch || meal.realName;
-    fetch(`/api/image?query=${encodeURIComponent(query)}`)
-      .then(r => r.json())
-      .then(data => { if (data.url) setImgUrl(data.url); });
-  }, [meal.imageSearch, meal.realName]);
 
   return (
     <div className="meal-card">
-      <div className="meal-card-img" style={imgUrl ? { backgroundImage: `url(${imgUrl})` } : {}}>
+      <div className="meal-card-img" style={meal.imageUrl ? { backgroundImage: `url(${meal.imageUrl})` } : {}}>
         <div className="meal-type-tag">{mealEmojis[meal.type] || '🍽️'} {meal.type}</div>
       </div>
+      <div className="meal-card-body">
+        <h3 className="meal-fun-name">{meal.realName}</h3>
+        <p className="meal-description">{meal.description}</p>
+        <div className="meal-meta">
+          <span className="time-tag">⏱ {meal.cookTime}</span>
+        </div>
+        <button
+          onClick={() => setExpandedMeal(isExpanded ? null : cardKey)}
+          className="recipe-toggle"
+        >
+          {isExpanded ? 'Hide recipe ↑' : 'See recipe ↓'}
+        </button>
+        {isExpanded && (
+          <div className="recipe-details">
+            <div className="mb-3">
+              <p className="recipe-section-title">Ingredients</p>
+              <ul className="recipe-list">
+                {meal.ingredients.map((ing, ii) => (
+                  <li key={ii}>• {ing}</li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <p className="recipe-section-title">Steps</p>
+              <ol className="recipe-list">
+                {meal.steps.map((step, si) => (
+                  <li key={si}>{si + 1}. {step}</li>
+                ))}
+              </ol>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
       <div className="meal-card-body">
         <h3 className="meal-fun-name">{meal.realName}</h3>
         <p className="meal-description">{meal.description}</p>
@@ -182,28 +210,25 @@ export default function Home() {
             {mealPlan.days.map((day, i) => (
               <div key={i} className="day-card">
                 <div className="day-emoji">{mealEmojis[day.meals[0]?.type] || '🍽️'}</div>
-                <div className="day-meal-name">{day.meals[0]?.funName || day.meals[0]?.realName}</div>
+                <div className="day-meal-name">{day.meals[0]?.realName}</div>
               </div>
             ))}
           </div>
 
-          {/* Meal Cards */}
-          {mealPlan.days.map((day, di) => (
-            <div key={di} className="mb-10">
-              <h2 className="results-heading mb-4">Meal {di + 1}</h2>
-              <div className="meal-cards-grid">
-                {day.meals.map((meal, mi) => (
-                  <MealCard
-                    key={mi}
-                    meal={meal}
-                    cardKey={`${di}-${mi}`}
-                    expandedMeal={expandedMeal}
-                    setExpandedMeal={setExpandedMeal}
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
+          {/* Meal Cards - all in one grid */}
+          <div className="meal-cards-grid">
+            {mealPlan.days.flatMap((day, di) =>
+              day.meals.map((meal, mi) => (
+                <MealCard
+                  key={`${di}-${mi}`}
+                  meal={meal}
+                  cardKey={`${di}-${mi}`}
+                  expandedMeal={expandedMeal}
+                  setExpandedMeal={setExpandedMeal}
+                />
+              ))
+            )}
+          </div>
 
           {/* Grocery List */}
           <h2 className="results-heading mb-6">🛒 Grocery List</h2>
