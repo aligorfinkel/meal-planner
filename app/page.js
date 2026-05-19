@@ -148,7 +148,6 @@ export default function Home() {
     return (
       <main className="min-h-screen carrot-bg flex items-center justify-center px-4">
         <div className="text-center" style={{width: '100%', maxWidth: '400px'}}>
-          <div className="loading-spinner mx-auto mb-6"></div>
           <h2 className="text-2xl font-bold heading-dark mb-3" style={{fontFamily: "'Fraunces', serif"}}>
             Building your meal plan... 🍳
           </h2>
