@@ -81,7 +81,7 @@ body {
 
 /* ---- VEGGIE BANNER ---- */
 .veggie-banner {
-font-size: 0.95rem;
+  font-size: 0.95rem;
   color: var(--pink-dark);
   font-weight: 500;
   text-align: center;
@@ -154,36 +154,64 @@ font-size: 0.95rem;
 
 /* ---- PILL BUTTONS ---- */
 .pill-btn {
-  padding: 0.5rem 1.1rem;
+  padding: 0.6rem 1.4rem;
   border-radius: 999px;
-  border: 1.5px solid;
+  border: none;
   font-size: 0.875rem;
   font-weight: 500;
   font-family: 'DM Sans', sans-serif;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.pill-btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0) 100%);
+  border-radius: 999px 999px 0 0;
+  pointer-events: none;
 }
 
 .pill-btn:hover {
-  animation: wiggle 0.4s ease;
+  transform: translateY(-1px);
 }
 
 .pill-btn-active {
-  background: var(--pink);
+  background: linear-gradient(180deg, #f472b6 0%, #ec4899 50%, #db2777 100%);
   color: white;
-  border-color: var(--pink);
-  box-shadow: 0 2px 12px rgba(236,72,153,0.3);
+  box-shadow:
+    inset 0 2px 3px rgba(255,255,255,0.25),
+    inset 0 -3px 6px rgba(0,0,0,0.1),
+    0 4px 14px rgba(236,72,153,0.45);
+}
+
+.pill-btn-active::before {
+  background: linear-gradient(180deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 100%);
 }
 
 .pill-btn-inactive {
-  background: white;
-  color: var(--text-dark);
-  border-color: #fbcfe8;
+  background: linear-gradient(180deg, #ffffff 0%, #fdf2f8 25%, #fce7f3 60%, #f9a8d4 100%);
+  color: #9d174d;
+  box-shadow:
+    inset 0 2px 4px rgba(255,255,255,1),
+    inset 0 -3px 6px rgba(190,24,93,0.12),
+    0 3px 10px rgba(190,24,93,0.18);
 }
 
 .pill-btn-inactive:hover {
-  border-color: var(--pink-light);
-  color: var(--pink-dark);
+  background: linear-gradient(180deg, #f472b6 0%, #ec4899 50%, #db2777 100%);
+  color: white;
+  box-shadow:
+    inset 0 2px 3px rgba(255,255,255,0.25),
+    0 6px 16px rgba(236,72,153,0.35);
+}
+
+.pill-btn-inactive:hover::before {
+  background: linear-gradient(180deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 100%);
 }
 
 /* ---- CTA BUTTON ---- */
@@ -471,6 +499,14 @@ font-size: 0.95rem;
   border-radius: 4px;
   flex-shrink: 0;
   background: white;
+}
+
+/* ---- GROCERY SINGLE COL ---- */
+.grocery-single-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 600px;
 }
 
 /* ---- LOADING ---- */
